@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    /* Light mode (fallback, less focus) */
+    --background: 220 13% 98%; /* Lighter gray */
+    --foreground: 220 10% 15%; /* Darker gray text */
+    --card: 220 13% 100%;
+    --card-foreground: 220 10% 15%;
+    --popover: 220 13% 100%;
+    --popover-foreground: 220 10% 15%;
+    --primary: 25 95% 53%; /* Bright Orange for light mode */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 10% 93%;
+    --secondary-foreground: 220 10% 25%;
+    --muted: 220 10% 93%;
+    --muted-foreground: 220 10% 40%;
+    --accent: 220 10% 93%;
+    --accent-foreground: 220 10% 25%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 10% 88%;
+    --input: 220 10% 88%;
+    --ring: 25 95% 53%;
+    --radius: 0.5rem;
+
+    /* Darcula-inspired accents for light mode (if ever used) */
+    --accent-orange: 25 95% 53%;
+    --accent-yellow: 45 100% 50%;
+    --accent-green: 100 50% 45%;
+    --accent-purple: 270 50% 60%;
+    --accent-gray: 210 10% 50%;
+  }
+
+  .dark {
+    /* Darcula Inspired Theme */
+    --background: 220 14% 10%; /* #181A1F - Very dark gray, slightly blueish */
+    --foreground: 220 10% 75%; /* #B0B8C5 - Light gray/off-white text */
+
+    --card: 220 14% 12%; /* #1D2027 - Slightly lighter than BG for cards */
+    --card-foreground: 220 10% 75%;
+
+    --popover: 220 14% 8%; /* #13151A - Darker for popovers */
+    --popover-foreground: 220 10% 75%;
+
+    --primary: 30 90% 60%; /* #FFB366 - Darcula Orange */
+    --primary-foreground: 220 14% 5%; /* Very dark for text on primary orange */
+
+    --secondary: 220 10% 20%; /* #2C2F3A - Darker gray */
+    --secondary-foreground: 220 10% 85%; /* Lighter gray for text on secondary */
+
+    --muted: 220 10% 18%; /* #262930 */
+    --muted-foreground: 220 10% 55%; /* #7C8594 - Softer text */
+
+    --accent: 220 10% 20%;
+    --accent-foreground: 220 10% 85%;
+
+    --destructive: 0 70% 55%; /* #FF6B6B - Darcula Red */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 10% 25%; /* #363A47 - Subtle borders */
+    --input: 220 10% 25%;
+    --ring: 30 90% 60%; /* Primary orange for focus rings */
+
+    /* Darcula Accent Colors (No Blues) */
+    --accent-orange: 30 90% 60%; /* #FFB366 */
+    --accent-yellow: 45 100% 65%; /* #FFD700 - Darcula Yellow */
+    --accent-green: 90 55% 55%; /* #98C379 - Darcula Green */
+    --accent-purple: 280 50% 65%; /* #C792EA - Darcula Purple */
+    --accent-pink: 330 70% 70%; /* #FF99B3 - Darcula Pink/Magenta */
+    --accent-gray: 220 10% 45%; /* #6A737D - Darcula Gray for comments/subtle text */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), sans-serif;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  a,
+  li,
+  button,
+  label,
+  input::placeholder,
+  textarea::placeholder {
+    @apply lowercase;
+  }
+  .normal-case {
+    text-transform: none !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-jetbrains-mono), monospace;
+  }
+  .font-mono {
+    font-family: var(--font-jetbrains-mono), monospace;
+  }
+  .font-sans {
+    font-family: var(--font-inter), sans-serif;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background) / 0.5);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.5);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  /* Add this for theme change animation */
+  body,
+  div,
+  main,
+  header,
+  footer,
+  section,
+  article,
+  aside,
+  button,
+  input,
+  textarea {
+    @apply transition-colors duration-500 ease-in-out;
+  }
+}
+
+/* Specific text color classes for accents */
+.text-accent-orange {
+  color: hsl(var(--accent-orange));
+}
+.text-accent-yellow {
+  color: hsl(var(--accent-yellow));
+}
+.text-accent-green {
+  color: hsl(var(--accent-green));
+}
+.text-accent-purple {
+  color: hsl(var(--accent-purple));
+}
+.text-accent-pink {
+  color: hsl(var(--accent-pink));
+}
+.text-accent-gray {
+  color: hsl(var(--accent-gray));
+}
+
+.border-accent-orange {
+  border-color: hsl(var(--accent-orange));
+}
+.border-accent-green {
+  border-color: hsl(var(--accent-green));
+}
+/* ... and so on for other accent colors if needed for borders */
+
+/* Pulsating orb animation */
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+.animate-pulse-orb {
+  animation: pulse 2s infinite;
+}
