@@ -107,10 +107,10 @@ export default function Hero() {
       className="min-h-[calc(100vh-10rem)] flex flex-col justify-center items-center text-center py-16"
     >
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-mono mb-6 normal-case">jason mcelhenney</h1>
-      <div className="text-lg sm:text-xl md:text-2xl mb-10 h-12 sm:h-16">
+      <div className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-10 h-16 sm:h-16">
         {commandSequences.length > 0 && <TypingEffect sequences={commandSequences} loop={true} giveUpChance={0.09} />}
       </div>
-      <p className="max-w-xl text-md text-muted-foreground mb-10">{heroTagline}</p>
+      <p className="max-w-xl text-md text-muted-foreground mb-10 mt-4 sm:mt-0">{heroTagline}</p>
       <div className="space-x-4">
         <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="#projects">see projects</Link>

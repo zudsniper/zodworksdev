@@ -25,7 +25,21 @@ export const metadata: Metadata = {
   title: "jason mcelhenney | software dev & ai tinkerer",
   description:
     "portfolio of jason mcelhenney. software development, ai, full-stack engineering, and other experiments.",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: {
+    icon: [
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" }
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" }
+    ]
+  },
+  appleWebApp: {
+    title: "zodworks"
+  },
+  manifest: "/site.webmanifest"
 }
 
 export default function RootLayout({

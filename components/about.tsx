@@ -19,7 +19,7 @@ export default function About() {
       <div className="grid md:grid-cols-3 gap-8 items-center">
         <div className="md:col-span-1 flex justify-center">
           <Avatar className="w-40 h-40 sm:w-48 sm:h-48 border-4 border-primary">
-            <AvatarImage src="/jason_cutout.png" alt="jason mcelhenney" className="object-cover" />
+            <AvatarImage src="/jason_cutout_25.png" alt="jason mcelhenney" className="object-cover" />
             <AvatarFallback className="text-4xl font-mono normal-case">jm</AvatarFallback>
           </Avatar>
         </div>

@@ -10,10 +10,10 @@ export default function GithubContributions() {
   // Using 'transparent' if available, otherwise a dark theme.
   // For rshah.org, specific color codes can be used for more control e.g. ?bg=181A1F&color=B0B8C5&line=FFB366&point=FFB366
   // Let's try to make it blend with the --card background.
-  const graphUrl = `https://ghchart.rshah.org/${GITHUB_USERNAME}?bg=181A1F&color=B0B8C5&line=FFB366&point=FFB366` // Using HSL for dark bg, text will be auto.
+  const graphUrl = `https://ghchart.rshah.org/da7707/${GITHUB_USERNAME}` // Using HSL for dark bg, text will be auto.
 
   return (
-    <section id="github-contributions" className="pt-12 pb-16">
+    <section id="github-contributions" className="pt-6 pb-16">
       {" "}
       {/* Adjusted padding as it's part of 'whoami' flow */}
       {/* Header removed */}
@@ -32,7 +32,7 @@ export default function GithubContributions() {
             // The new URL attempts to set a background color matching the theme.
             src={graphUrl || "/placeholder.svg"}
             alt={`${GITHUB_USERNAME}'s github contribution graph`}
-            className="max-w-full h-auto rounded"
+            className="max-w-full h-auto rounded scale-110"
           />
         </a>
       </div>
