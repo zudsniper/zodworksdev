@@ -96,6 +96,24 @@ const commandSequences: TypingAction[][] = [
     { type: "type", text: "\nLogin Succeeded", speed: 80, clearPrevious: false },
     { type: "pause", duration: 3000 },
   ],
+  // Sequence 6: Portfolio source code showcase
+  [
+    { type: "command", text: "git clone https://github.com/zudsniper/zodworksdev.git", clearPrevious: true, speed: 50 },
+    { type: "pause", duration: 1000 },
+    { type: "type", text: "\nCloning into 'zodworksdev'...", speed: 40, clearPrevious: false },
+    { type: "type", text: "\nremote: Enumerating objects: 247, done.", speed: 30 },
+    { type: "type", text: "\nremote: Total 247 (delta 0), reused 0 (delta 0)", speed: 30 },
+    { type: "type", text: "\nReceiving objects: 100% (247/247), done.", speed: 30 },
+    { type: "pause", duration: 1500 },
+    { type: "delete", count: 200, speed: 20 },
+    { type: "command", text: "cd zodworksdev && npm install", speed: 70 },
+    { type: "pause", duration: 1000 },
+    { type: "delete", count: 30, speed: 40 },
+    { type: "command", text: "npm run dev", speed: 80 },
+    { type: "type", text: "\n▲ Next.js 14.0.0", speed: 50, clearPrevious: false },
+    { type: "type", text: "\n- Local:        http://localhost:3000", speed: 40 },
+    { type: "pause", duration: 3000 },
+  ],
 ]
 
 export default function Hero() {

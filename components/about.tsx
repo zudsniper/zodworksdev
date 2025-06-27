@@ -42,6 +42,18 @@ export default function About() {
               src="https://img.shields.io/badge/status-open%20to%20work-purple?style=flat-square"
               alt="status: open to work"
             />
+            <a 
+              href="https://github.com/zudsniper/zodworksdev" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block hover:opacity-80 transition-opacity"
+              title="View source code for this portfolio site"
+            >
+              <img
+                src="https://img.shields.io/badge/this%20site-open%20source-brightgreen?style=flat-square&logo=github"
+                alt="this site: open source"
+              />
+            </a>
           </div>
         </div>
       </div>

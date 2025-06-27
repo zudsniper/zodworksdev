@@ -2,7 +2,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Moon, Sun, Github, Linkedin, Menu, X } from "lucide-react"
+import { Moon, Sun, Github, Linkedin, Menu, X, Code2 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useState, useEffect } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -77,7 +77,7 @@ export default function Header() {
             align="start"
             className="w-auto p-0 border-none bg-transparent shadow-none" // Remove default HoverCard styling
           >
-            <DiscordProfileTooltip theme={theme} />
+            <DiscordProfileTooltip theme={theme as "dark" | "light" | undefined} />
           </HoverCardContent>
         </HoverCard>
 
@@ -97,7 +97,18 @@ export default function Header() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="toggle theme">
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
-          <a href="https://github.com/zudsniper" target="_blank" rel="noopener noreferrer" aria-label="github">
+          <a 
+            href="https://github.com/zudsniper/zodworksdev" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            aria-label="view source code"
+            title="View source code for this site"
+          >
+            <Button variant="ghost" size="icon">
+              <Code2 className="h-5 w-5" />
+            </Button>
+          </a>
+          <a href="https://github.com/zudsniper" target="_blank" rel="noopener noreferrer" aria-label="github profile">
             <Button variant="ghost" size="icon">
               <Github className="h-5 w-5" />
             </Button>
@@ -133,6 +144,18 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuItem asChild>
+                  <a 
+                    href="https://github.com/zudsniper/zodworksdev" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Code2 className="h-4 w-4" />
+                    view source
+                  </a>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
