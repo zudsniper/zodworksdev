@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./blog.db"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  password    String   // hashed password
+  role        Role     @default(USER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  posts       BlogPost[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model BlogPost {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  content     String      // Raw content (markdown/html)
+  excerpt     String?     // Optional excerpt
+  template    String      @default("post") // Liquid template to use
+  status      PostStatus  @default(DRAFT)
+  publishDate DateTime?
+  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
+  
+  // Author
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Tags
+  tags        Tag[]       @relation("BlogPostTags")
+  
+  // Theme and template settings
+  theme       String      @default("default")
+  metadata    String?     // JSON string for custom metadata
+
+  @@map("blog_posts")
+}
+
+model Tag {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  color       String?    // Hex color for the tag
+  createdAt   DateTime   @default(now())
+  
+  // Relations
+  posts       BlogPost[] @relation("BlogPostTags")
+
+  @@map("tags")
+}
+
+model Theme {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  version     String
+  description String?
+  author      String?
+  templates   String   // JSON array of available templates
+  assets      String   // JSON object with CSS/JS assets
+  config      String?  // JSON configuration
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("themes")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}

@@ -1,0 +1,152 @@
+{% layout "layouts/default" %}
+
+<div class="blog-index">
+    <header class="page-header">
+        <h1>blog posts</h1>
+        <p>thoughts on software development, ai, and technology</p>
+    </header>
+    
+    {% if posts and posts.size > 0 %}
+        <div class="posts-grid">
+            {% for post in posts %}
+                <article class="post-preview">
+                    <header class="post-preview-header">
+                        <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+                        <div class="meta">
+                            <time datetime="{{ post.publishDate }}">{{ post.publishDate | date_format: "short" }}</time>
+                            {% if post.reading_time %} • {{ post.reading_time }}{% endif %}
+                        </div>
+                    </header>
+                    
+                    <div class="post-excerpt">
+                        {{ post.excerpt }}
+                    </div>
+                    
+                    {% if post.tags and post.tags.size > 0 %}
+                    <div class="tags">
+                        {% for tag in post.tags %}
+                            <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <footer class="post-preview-footer">
+                        <a href="{{ post.url }}" class="read-more">read more &rarr;</a>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-posts">
+            <p>no blog posts available yet.</p>
+            <p><a href="/#projects">check out my projects instead &rarr;</a></p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.page-header p {
+    color: hsl(var(--muted-foreground));
+    font-size: 1.1rem;
+}
+
+.posts-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.post-preview {
+    padding: 2rem;
+    background: hsl(var(--muted) / 0.3);
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(var(--background) / 0.4);
+}
+
+.post-preview-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.post-preview-header h2 a {
+    color: hsl(var(--accent-orange));
+    text-decoration: none;
+}
+
+.post-preview-header h2 a:hover {
+    color: hsl(var(--accent-green));
+}
+
+.post-preview-header .meta {
+    margin-bottom: 1rem;
+}
+
+.post-excerpt {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    color: hsl(var(--muted-foreground));
+}
+
+.post-preview-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.read-more {
+    color: hsl(var(--accent-green));
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.read-more:hover {
+    color: hsl(var(--accent-orange));
+}
+
+.no-posts {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.no-posts a {
+    color: hsl(var(--accent-green));
+    text-decoration: none;
+}
+
+.no-posts a:hover {
+    color: hsl(var(--accent-orange));
+}
+
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .post-preview {
+        padding: 1.5rem;
+    }
+    
+    .post-preview-header h2 {
+        font-size: 1.25rem;
+    }
+}
+</style>

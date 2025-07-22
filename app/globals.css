@@ -206,3 +206,58 @@ body {
 .animate-pulse-orb {
   animation: pulse 2s infinite;
 }
+
+/* Blog post specific styling */
+@layer components {
+  .prose {
+    color: hsl(var(--foreground));
+    max-width: none;
+  }
+  
+  .prose h2 {
+    color: hsl(var(--accent-orange));
+    border-bottom: 1px solid hsl(var(--border));
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .prose h3 {
+    color: hsl(var(--accent-green));
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .prose p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  
+  .prose ul {
+    margin-bottom: 1rem;
+  }
+  
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .prose strong {
+    color: hsl(var(--accent-yellow));
+    font-weight: 600;
+  }
+  
+  .prose code {
+    background-color: hsl(var(--muted));
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+  
+  .prose blockquote {
+    border-left: 4px solid hsl(var(--accent-purple));
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+  }
+}

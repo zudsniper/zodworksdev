@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" class="{{ site.theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if post.title %}{{ post.title }} | {% endif %}{{ site.title }}</title>
+    <meta name="description" content="{{ post.excerpt | default: site.description }}">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="{% if post.title %}{{ post.title }}{% else %}{{ site.title }}{% endif %}">
+    <meta property="og:description" content="{{ post.excerpt | default: site.description }}">
+    <meta property="og:url" content="{{ site.url }}{{ post.url | default: page.url }}">
+    <meta property="og:type" content="{% if post %}article{% else %}website{% endif %}">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% if post.title %}{{ post.title }}{% else %}{{ site.title }}{% endif %}">
+    <meta name="twitter:description" content="{{ post.excerpt | default: site.description }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <style>
+        :root {
+            --background: 220 14% 10%;
+            --foreground: 220 10% 75%;
+            --accent-orange: 25 95% 53%;
+            --accent-green: 100 50% 45%;
+            --accent-purple: 270 50% 60%;
+            --accent-yellow: 45 100% 50%;
+            --border: 220 10% 20%;
+            --muted: 220 10% 15%;
+            --muted-foreground: 220 10% 50%;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .header {
+            border-bottom: 1px solid hsl(var(--border));
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            color: hsl(var(--accent-orange));
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .header a {
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        .header a:hover {
+            color: hsl(var(--accent-green));
+        }
+        
+        .content h1, .content h2, .content h3 {
+            color: hsl(var(--accent-orange));
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content h2 {
+            color: hsl(var(--accent-green));
+            border-bottom: 1px solid hsl(var(--border));
+            padding-bottom: 0.5rem;
+        }
+        
+        .content p {
+            margin-bottom: 1rem;
+        }
+        
+        .content code {
+            background: hsl(var(--muted));
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+        
+        .content pre {
+            background: hsl(var(--muted));
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .content blockquote {
+            border-left: 4px solid hsl(var(--accent-purple));
+            margin: 1.5rem 0;
+            padding-left: 1rem;
+            color: hsl(var(--muted-foreground));
+            font-style: italic;
+        }
+        
+        .meta {
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .tag {
+            background: hsl(var(--muted));
+            color: hsl(var(--foreground));
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .tag:hover {
+            background: hsl(var(--accent-orange));
+            color: white;
+        }
+        
+        .footer {
+            border-top: 1px solid hsl(var(--border));
+            padding-top: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .footer a {
+            color: hsl(var(--accent-green));
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><a href="/">{{ site.title }}</a></h1>
+            <nav>
+                <a href="/">portfolio</a> |
+                <a href="/blog">blog</a> |
+                <a href="/#contact">contact</a>
+            </nav>
+        </header>
+        
+        <main class="content">
+            {{ content }}
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; {{ "now" | date: "%Y" }} jason mcelhenney. <a href="/">back to portfolio</a></p>
+        </footer>
+    </div>
+</body>
+</html>

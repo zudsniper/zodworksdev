@@ -1,0 +1,41 @@
+{
+    "servers": {
+        "exa": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "https://mcp.exa.ai/mcp?exaApiKey=d8cc83d4-583e-4864-ae3a-17a6f2457e17"
+            ],
+            "env": {},
+            "working_directory": null,
+            "start_on_launch": true
+        },
+        "deepwiki": {
+            "command": "npx",
+            "args": [
+                "mcp-remote",
+                "https://mcp.deepwiki.com/sse"
+            ]
+        },
+        "taskmaster-ai": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "--package=task-master-ai",
+                "task-master-ai"
+            ],
+            "env": {
+                "OPENROUTER_API_KEY": "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"
+            }
+        },
+        "notifications": {
+            "command": "npx",
+            "args": [ "-y", "mcp-notifications"],
+            "env": {
+                "WEBHOOK_URL": "https://discord.com/api/webhooks/1395944151937187923/-maZs9c7o8gBkPwW9AAh_yp2ce808ghRxXiD3mGK47dM8HXsANunhz-CW8gkWJafCXl0",
+                "WEBHOOK_TYPE": "discord"
+            }
+        }
+    }
+}
