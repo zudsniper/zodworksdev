@@ -36,3 +36,6 @@ old/
 .open-next/
 
 .wrangler/
+
+# frequently contains keys
+**/mcp.json
