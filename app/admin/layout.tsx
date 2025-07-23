@@ -1,7 +1,4 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { AdminSidebar } from '@/components/admin-sidebar'
 
 export const metadata: Metadata = {
@@ -14,12 +11,9 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
-
-  if (!session || session.user.role !== 'ADMIN') {
-    redirect('/admin/login')
-  }
-
+  // Authentication is handled by Cloudflare Zero Trust middleware
+  // User is guaranteed to be authenticated at this point
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">

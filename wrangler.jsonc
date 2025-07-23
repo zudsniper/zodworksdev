@@ -2,7 +2,7 @@
     "$schema": "node_modules/wrangler/config-schema.json",
     "account_id": "810bd4acabc2c37ab296b683fad360b4",
     "main": ".open-next/worker.js",
-    "name": "portfolio",
+    "name": "portfolio-dev",
     "compatibility_date": "2024-12-30",
     "compatibility_flags": [
       // Enable Node.js API
@@ -19,25 +19,54 @@
     "services": [
       {
         "binding": "WORKER_SELF_REFERENCE",
-        // The service should match the "name" of your worker
-        "service": "portfolio",
+        "service": "portfolio-dev",
       },
     ],
     "r2_buckets": [
-      // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
       {
         "binding": "NEXT_INC_CACHE_R2_BUCKET",
-        "bucket_name": "portfolio-next-inc-cache",
+        "bucket_name": "portfolio-next-inc-cache-dev",
       },
     ],
-    "routes": [
+    "d1_databases": [
       {
-        "pattern": "zodworks.dev",
-        "custom_domain": true
-      },
-      { 
-        "pattern": "www.zodworks.dev",
-        "custom_domain": true
+        "binding": "DB",
+        "database_name": "zodworks-blog-db",
+        "database_id": "02cd4520-016c-4fe6-bb70-94a536bc3937"
       }
-    ]
+    ],
+    "env": {
+      "production": {
+        "name": "portfolio",
+        "routes": [
+          {
+            "pattern": "zodworks.dev",
+            "custom_domain": true
+          },
+          { 
+            "pattern": "www.zodworks.dev",
+            "custom_domain": true
+          }
+        ],
+        "services": [
+          {
+            "binding": "WORKER_SELF_REFERENCE",
+            "service": "portfolio",
+          },
+        ],
+        "r2_buckets": [
+          {
+            "binding": "NEXT_INC_CACHE_R2_BUCKET",
+            "bucket_name": "portfolio-next-inc-cache",
+          },
+        ],
+        "d1_databases": [
+          {
+            "binding": "DB",
+            "database_name": "zodworks-blog-db-prod",
+            "database_id": "7259e040-5e18-4b53-b898-1da62a0b2b78"
+          }
+        ]
+      }
+    }
   }

@@ -1,104 +1,133 @@
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@zodworks.dev'
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  console.log('Seeding database...')
 
-  // Check if admin user already exists
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail }
+  // Create sample tags
+  const frontendTag = await prisma.tag.upsert({
+    where: { name: 'Frontend' },
+    update: {},
+    create: {
+      name: 'Frontend',
+      slug: 'frontend',
+      color: '#3B82F6'
+    }
   })
 
-  if (existingAdmin) {
-    console.log('Admin user already exists')
-    return
-  }
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(adminPassword, 12)
-
-  // Create admin user
-  const admin = await prisma.user.create({
-    data: {
-      email: adminEmail,
-      name: 'Admin',
-      password: hashedPassword,
-      role: 'ADMIN',
-    },
+  const backendTag = await prisma.tag.upsert({
+    where: { name: 'Backend' },
+    update: {},
+    create: {
+      name: 'Backend',
+      slug: 'backend',
+      color: '#10B981'
+    }
   })
 
-  console.log(`Created admin user: ${admin.email}`)
+  const tutorialTag = await prisma.tag.upsert({
+    where: { name: 'Tutorial' },
+    update: {},
+    create: {
+      name: 'Tutorial',
+      slug: 'tutorial',
+      color: '#F59E0B'
+    }
+  })
 
-  // Create a default theme
-  const defaultTheme = await prisma.theme.create({
-    data: {
+  // Create sample blog posts
+  const samplePost1 = await prisma.blogPost.upsert({
+    where: { slug: 'welcome-to-zodworks' },
+    update: {},
+    create: {
+      title: 'Welcome to ZodWorks',
+      slug: 'welcome-to-zodworks',
+      content: `# Welcome to ZodWorks
+
+This is your first blog post! This platform is built with:
+
+- **Next.js 15** - React framework with App Router
+- **Cloudflare Workers** - Edge runtime deployment
+- **Prisma** - Type-safe database access
+- **SQLite** - Local development database
+- **Cloudflare Access** - Authentication and security
+
+## Getting Started
+
+You can edit this post or create new ones using the admin interface. The platform supports:
+
+- Markdown content
+- Liquid templating
+- Multiple themes
+- Tag management
+- File-based content sync
+
+Happy blogging!`,
+      excerpt: 'Welcome to your new blog platform built with Next.js and Cloudflare Workers.',
+      status: 'PUBLISHED',
+      template: 'post',
+      theme: 'default',
+      publishDate: new Date(),
+      authorEmail: 'admin@zodworks.dev',
+      authorName: 'Admin',
+      tags: {
+        connect: [{ id: frontendTag.id }, { id: tutorialTag.id }]
+      }
+    }
+  })
+
+  const samplePost2 = await prisma.blogPost.upsert({
+    where: { slug: 'building-with-cloudflare-workers' },
+    update: {},
+    create: {
+      title: 'Building with Cloudflare Workers',
+      slug: 'building-with-cloudflare-workers',
+      content: `# Building with Cloudflare Workers
+
+Cloudflare Workers provide an excellent platform for deploying Next.js applications at the edge.
+
+## Benefits
+
+- **Global Performance** - Deploy to 200+ cities worldwide
+- **Zero Cold Starts** - Instant response times
+- **Cost Effective** - Pay per request model
+- **Easy Integration** - Works seamlessly with Next.js
+
+## Getting Started
+
+This blog is running on Cloudflare Workers using OpenNext for compatibility. The entire stack is optimized for edge deployment.`,
+      excerpt: 'Learn how to deploy Next.js applications on Cloudflare Workers for global performance.',
+      status: 'PUBLISHED',
+      template: 'post',
+      theme: 'default',
+      publishDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+      authorEmail: 'admin@zodworks.dev',
+      authorName: 'Admin',
+      tags: {
+        connect: [{ id: backendTag.id }, { id: tutorialTag.id }]
+      }
+    }
+  })
+
+  // Create default theme
+  await prisma.theme.upsert({
+    where: { name: 'default' },
+    update: {},
+    create: {
       name: 'default',
       displayName: 'Default Theme',
       version: '1.0.0',
-      description: 'The default blog theme with clean, modern styling',
+      description: 'Clean and minimal blog theme',
       author: 'ZodWorks',
-      isActive: true,
-      templates: JSON.stringify([
-        'post.liquid',
-        'index.liquid',
-        'layout.liquid'
-      ]),
+      templates: JSON.stringify(['post', 'page', 'index']),
       assets: JSON.stringify({
-        css: [],
+        css: ['/themes/default/style.css'],
         js: []
       }),
-      config: JSON.stringify({
-        colors: {
-          primary: '#3b82f6',
-          secondary: '#64748b'
-        }
-      })
+      isActive: true
     }
   })
-
-  console.log(`Created default theme: ${defaultTheme.name}`)
-
-  // Create a sample blog post
-  const samplePost = await prisma.blogPost.create({
-    data: {
-      title: 'Welcome to the Blog',
-      slug: 'welcome-to-the-blog',
-      content: `
-        <p>Welcome to our new blog system! This post demonstrates the power of Liquid templating combined with Next.js.</p>
-        
-        <h2>Features</h2>
-        <ul>
-          <li>Rich text editing with TipTap</li>
-          <li>Liquid templating for flexible theming</li>
-          <li>Tag management</li>
-          <li>Admin authentication</li>
-        </ul>
-        
-        <p>We're excited to share more content with you soon!</p>
-      `,
-      excerpt: 'Welcome to our new blog system! This post demonstrates the power of Liquid templating combined with Next.js.',
-      status: 'PUBLISHED',
-      publishDate: new Date(),
-      authorId: admin.id,
-    }
-  })
-
-  console.log(`Created sample post: ${samplePost.title}`)
-
-  // Create some sample tags
-  const tags = await prisma.tag.createMany({
-    data: [
-      { name: 'Welcome', slug: 'welcome' },
-      { name: 'Features', slug: 'features' },
-      { name: 'Next.js', slug: 'nextjs' },
-      { name: 'TypeScript', slug: 'typescript' },
-    ]
-  })
-
-  console.log(`Created ${tags.count} sample tags`)
 
   console.log('Database seeded successfully!')
 }

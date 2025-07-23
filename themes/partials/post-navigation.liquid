@@ -1,0 +1,114 @@
+<nav class="post-navigation">
+  <div class="nav-links">
+    {% if prev_post %}
+    <a href="{{ prev_post.url }}" class="nav-prev">
+      <span class="nav-direction">← Previous</span>
+      <span class="nav-title">{{ prev_post.title }}</span>
+    </a>
+    {% else %}
+    <a href="/blog" class="nav-back">
+      <span class="nav-direction">← All Posts</span>
+      <span class="nav-title">Back to Blog</span>
+    </a>
+    {% endif %}
+    
+    {% if next_post %}
+    <a href="{{ next_post.url }}" class="nav-next">
+      <span class="nav-direction">Next →</span>
+      <span class="nav-title">{{ next_post.title }}</span>
+    </a>
+    {% else %}
+    <a href="/#projects" class="nav-portfolio">
+      <span class="nav-direction">Portfolio →</span>
+      <span class="nav-title">View Projects</span>
+    </a>
+    {% endif %}
+  </div>
+  
+  {% if post.series %}
+  <div class="series-nav">
+    <h4>Part of series: {{ post.series }}</h4>
+    <!-- Series navigation would be implemented here -->
+  </div>
+  {% endif %}
+</nav>
+
+<style>
+.post-navigation {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.nav-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.nav-links a {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  text-decoration: none;
+  color: hsl(var(--foreground));
+  transition: all 0.2s;
+  min-height: 4rem;
+}
+
+.nav-links a:hover {
+  border-color: hsl(var(--accent-green));
+  background: hsl(var(--muted));
+}
+
+.nav-prev,
+.nav-back {
+  text-align: left;
+}
+
+.nav-next,
+.nav-portfolio {
+  text-align: right;
+}
+
+.nav-direction {
+  font-size: 0.875rem;
+  color: hsl(var(--accent-green));
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.nav-title {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+.series-nav {
+  padding: 1rem;
+  background: hsl(var(--muted));
+  border-radius: 0.5rem;
+  border-left: 4px solid hsl(var(--accent-purple));
+}
+
+.series-nav h4 {
+  margin: 0;
+  color: hsl(var(--accent-purple));
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .nav-next,
+  .nav-portfolio {
+    text-align: left;
+  }
+}
+</style> 

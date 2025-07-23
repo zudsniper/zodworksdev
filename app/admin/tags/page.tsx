@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
+import { getBuildSafePrismaClient } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react'
 import { TagActions } from '@/components/tag-actions'
 
 async function getTags() {
+  const prisma = await getBuildSafePrismaClient()
   return prisma.tag.findMany({
     include: {
       _count: {

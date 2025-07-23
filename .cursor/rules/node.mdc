@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+
+in this household we use pnpm. 
+
+not yarn. not npm. unless we absolutely have to, use pnpm. 

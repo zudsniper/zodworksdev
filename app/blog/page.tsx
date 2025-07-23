@@ -1,5 +1,5 @@
 import { blogEngine } from '@/lib/liquid-engine'
-import { prisma } from '@/lib/prisma'
+import { getAllBlogPosts } from '@/lib/content-utils'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -14,30 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default async function BlogIndexPage() {
-  const posts = await prisma.blogPost.findMany({
-    where: { status: 'PUBLISHED' },
-    include: {
-      author: { select: { name: true, email: true } },
-      tags: true,
-    },
-    orderBy: { publishDate: 'desc' },
-  })
-
-  const blogPosts = posts.map((post: any) => ({
-    id: post.id,
-    title: post.title,
-    slug: post.slug,
-    content: post.content,
-    excerpt: post.excerpt,
-    author: post.author.name || post.author.email,
-    publishDate: post.publishDate?.toISOString() || post.createdAt.toISOString(),
-    updatedDate: post.updatedAt.toISOString(),
-    tags: post.tags.map((tag: any) => tag.name),
-    template: post.template,
-    theme: post.theme,
-    status: post.status as 'draft' | 'published',
-    metadata: post.metadata ? JSON.parse(post.metadata) : {},
-  }))
+  // Get all published blog posts (includes both admin-created and file-based content)
+  const blogPosts = await getAllBlogPosts(false)
 
   try {
     const renderedContent = await blogEngine.renderPostList(blogPosts, 'default')

@@ -39,3 +39,36 @@ old/
 
 # frequently contains keys
 **/mcp.json
+
+# Logs
+logs
+*.log
+dev-debug.log
+
+# Dependency directories
+node_modules/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS specific
+.DS_Store
+
+# Prisma database files (SQLite)
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal
+
+# Task files
+# tasks.json
+# tasks/ 
+
+# taskmaster
+.taskmaster/

@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+import { getBuildSafePrismaClient } from '@/lib/prisma'
 import { EditPostForm } from '@/components/edit-post-form'
 
 async function getPost(id: string) {
+  const prisma = await getBuildSafePrismaClient()
   const post = await prisma.blogPost.findUnique({
     where: { id },
     include: {
-      author: { select: { name: true, email: true } },
       tags: true,
     }
   })
@@ -19,6 +19,7 @@ async function getPost(id: string) {
 }
 
 async function getTags() {
+  const prisma = await getBuildSafePrismaClient()
   return prisma.tag.findMany({
     orderBy: { name: 'asc' }
   })

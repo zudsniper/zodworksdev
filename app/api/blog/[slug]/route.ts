@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/blog/[slug] - Get a single blog post by slug
@@ -14,12 +13,6 @@ export async function GET(
     const post = await prisma.blogPost.findUnique({
       where: { slug },
       include: {
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
         tags: true,
       },
     })
@@ -32,7 +25,7 @@ export async function GET(
     }
 
     // Only show published posts to non-authenticated users
-    const session = await getServerSession(authOptions)
+    const session = await getSession(request as any)
     if (post.status !== 'PUBLISHED' && !session) {
       return NextResponse.json(
         { error: 'Blog post not found' },
@@ -47,7 +40,7 @@ export async function GET(
         slug: post.slug,
         content: post.content,
         excerpt: post.excerpt,
-        author: post.author.name || post.author.email,
+        author: post.authorName || post.authorEmail,
         publishDate: post.publishDate?.toISOString(),
         updatedDate: post.updatedAt.toISOString(),
         tags: post.tags.map((tag: any) => tag.name),
@@ -72,13 +65,10 @@ export async function PUT(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(request as any)
     
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { slug } = params
@@ -97,13 +87,8 @@ export async function PUT(
       )
     }
 
-    // Check if user owns this post or is admin
-    if (existingPost.authorId !== session.user.id && session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Not authorized to edit this post' },
-        { status: 403 }
-      )
-    }
+    // All authenticated users can edit posts (simplified for Cloudflare Access)
+    // Authorization check simplified since Cloudflare Access handles user authentication
 
     // Handle tags
     let tagConnections = []
@@ -138,12 +123,6 @@ export async function PUT(
         },
       },
       include: {
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
         tags: true,
       },
     })
@@ -155,7 +134,7 @@ export async function PUT(
         slug: updatedPost.slug,
         content: updatedPost.content,
         excerpt: updatedPost.excerpt,
-        author: updatedPost.author.name || updatedPost.author.email,
+        author: updatedPost.authorName || updatedPost.authorEmail,
         publishDate: updatedPost.publishDate?.toISOString(),
         updatedDate: updatedPost.updatedAt.toISOString(),
         tags: updatedPost.tags.map((tag: any) => tag.name),
@@ -180,13 +159,10 @@ export async function DELETE(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(request as any)
     
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { slug } = params
@@ -202,13 +178,8 @@ export async function DELETE(
       )
     }
 
-    // Check if user owns this post or is admin
-    if (existingPost.authorId !== session.user.id && session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Not authorized to delete this post' },
-        { status: 403 }
-      )
-    }
+    // All authenticated users can delete posts (simplified for Cloudflare Access)
+    // Authorization check simplified since Cloudflare Access handles user authentication
 
     await prisma.blogPost.delete({
       where: { slug },

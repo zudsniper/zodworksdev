@@ -1,23 +1,16 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { blogEngine } from '@/lib/liquid-engine'
 
 // GET /api/blog - List all published blog posts
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const posts = await prisma.blogPost.findMany({
       where: {
         status: 'PUBLISHED',
       },
       include: {
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
         tags: true,
       },
       orderBy: {
@@ -32,7 +25,7 @@ export async function GET() {
         slug: post.slug,
         content: post.content,
         excerpt: post.excerpt,
-        author: post.author.name || post.author.email,
+        author: post.authorName || post.authorEmail,
         publishDate: post.publishDate?.toISOString(),
         updatedDate: post.updatedAt.toISOString(),
         tags: post.tags.map(tag => tag.name),
@@ -54,13 +47,10 @@ export async function GET() {
 // POST /api/blog - Create a new blog post (authenticated)
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(request as any)
     
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
@@ -111,19 +101,14 @@ export async function POST(request: Request) {
         theme: theme || 'default',
         status: status || 'DRAFT',
         publishDate: status === 'PUBLISHED' && publishDate ? new Date(publishDate) : (status === 'PUBLISHED' ? new Date() : null),
-        authorId: session.user.id,
+        authorEmail: session.user.email,
+        authorName: session.user.email, // Using email as name for now
         metadata: metadata ? JSON.stringify(metadata) : null,
         tags: {
           connect: tagConnections,
         },
       },
       include: {
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
         tags: true,
       },
     })
@@ -134,7 +119,7 @@ export async function POST(request: Request) {
       slug: post.slug,
       content: post.content,
       excerpt: post.excerpt,
-      author: post.author.name || post.author.email,
+                author: post.authorName || post.authorEmail,
       publishDate: post.publishDate?.toISOString(),
       updatedDate: post.updatedAt.toISOString(),
       tags: post.tags.map(tag => tag.name),

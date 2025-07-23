@@ -1,0 +1,93 @@
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-info">
+      <p>&copy; {{ "now" | date: "%Y" }} {{ site.author | default: "jason mcelhenney" }}.</p>
+      <p class="footer-tagline">{{ site.tagline | default: "software dev & ai tinkerer" }}</p>
+    </div>
+    
+    <div class="footer-links">
+      <a href="/">portfolio</a>
+      <a href="/blog">blog</a>
+      <a href="/#contact">contact</a>
+      {% if site.github_url %}
+      <a href="{{ site.github_url }}" target="_blank" rel="noopener">github</a>
+      {% endif %}
+      {% if site.linkedin_url %}
+      <a href="{{ site.linkedin_url }}" target="_blank" rel="noopener">linkedin</a>
+      {% endif %}
+    </div>
+  </div>
+  
+  {% if page.type == 'blog' %}
+  <div class="footer-meta">
+    <small class="content-source">
+      Content powered by Liquid templates & Next.js
+    </small>
+  </div>
+  {% endif %}
+</footer>
+
+<style>
+.site-footer {
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 2rem;
+  margin-top: 3rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.footer-info p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.footer-tagline {
+  color: hsl(var(--accent-orange));
+  font-style: italic;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.footer-links a {
+  color: hsl(var(--accent-green));
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.footer-links a:hover {
+  color: hsl(var(--accent-orange));
+}
+
+.footer-meta {
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.content-source {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .footer-links {
+    justify-content: center;
+  }
+}
+</style> 

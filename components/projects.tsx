@@ -139,28 +139,6 @@ const defaultProjectsData: Project[] = [
     shieldColor: "orange",
     imageUrl: "/projects/NDAExpress.png?width=400&height=250",
   },
-  {
-    id: "spookytf",
-    title: "spooky.tf",
-    description: "co-founded and led development for a community project, managing team, social media, and hiring.",
-    tags: ["project management", "team lead", "community", "game server"],
-    liveLink: null,
-    repoLink: "https://github.com/spooky.tf",
-    status: "completed (mar 2023)",
-    shieldColor: "purple",
-    imageUrl: "/projects/spookytf.png?width=400&height=250",
-  },
-  {
-    id: "bashbits",
-    title: "bashbits",
-    description: "collection of personal bash & zsh scripts for linux & macos; installers, os-setup wizards, etc.",
-    tags: ["bash", "zsh", "linux", "macos", "devops", "scripts"],
-    liveLink: null,
-    repoLink: "https://github.com/zudsniper/bashbits",
-    status: "maintained",
-    shieldColor: "gray",
-    imageUrl: "/projects/bashbits.png?width=400&height=250",
-  },
 ]
 
 const ProjectCard = ({ project }: { project: Project }) => {

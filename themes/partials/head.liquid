@@ -1,0 +1,38 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Title and Meta -->
+<title>{% if post.title %}{{ post.title }} | {% endif %}{{ site.title }}</title>
+<meta name="description" content="{{ post.excerpt | default: page.description | default: site.description }}">
+<meta name="author" content="{{ post.author | default: site.author | default: 'jason mcelhenney' }}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="{% if post.title %}{{ post.title }}{% else %}{{ page.title | default: site.title }}{% endif %}">
+<meta property="og:description" content="{{ post.excerpt | default: page.description | default: site.description }}">
+<meta property="og:url" content="{{ site.url }}{{ post.url | default: page.url | default: page.canonical_url }}">
+<meta property="og:type" content="{% if post %}article{% else %}website{% endif %}">
+<meta property="og:image" content="{{ post.image | default: page.image | default: site.default_image | default: '/og-image.jpg' }}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% if post.title %}{{ post.title }}{% else %}{{ page.title | default: site.title }}{% endif %}">
+<meta name="twitter:description" content="{{ post.excerpt | default: page.description | default: site.description }}">
+<meta name="twitter:image" content="{{ post.image | default: page.image | default: site.default_image | default: '/og-image.jpg' }}">
+
+<!-- Favicon -->
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- Article Meta (for blog posts) -->
+{% if post %}
+<meta property="article:published_time" content="{{ post.publishDate }}">
+<meta property="article:modified_time" content="{{ post.updatedDate }}">
+<meta property="article:author" content="{{ post.author }}">
+{% for tag in post.tags %}
+<meta property="article:tag" content="{{ tag }}">
+{% endfor %}
+{% endif %}
+
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ site.url }}{{ post.url | default: page.url | default: page.canonical_url }}"> 

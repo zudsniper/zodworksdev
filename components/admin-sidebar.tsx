@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
 import { 
   FileText, 
   Tags, 
@@ -26,6 +25,12 @@ const navigation = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+
+  const handleSignOut = () => {
+    // For Cloudflare Access, redirect to the logout endpoint
+    const teamName = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCESS_TEAM_NAME
+    window.location.href = `https://${teamName}.cloudflareaccess.com/cdn-cgi/access/logout`
+  }
 
   return (
     <div className="w-64 bg-white shadow-lg">
@@ -60,7 +65,7 @@ export function AdminSidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start"
-          onClick={() => signOut({ callbackUrl: '/' })}
+          onClick={handleSignOut}
         >
           <LogOut className="mr-3 h-4 w-4" />
           Sign Out

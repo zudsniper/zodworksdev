@@ -1,0 +1,13 @@
+# Cloudflare Workers Development Variables
+# Copy this file to .dev.vars for local development with `wrangler dev`
+
+# Cloudflare Zero Trust / Access Configuration
+CLOUDFLARE_ACCESS_TEAM_NAME="your-team-name"
+CLOUDFLARE_ACCESS_APPLICATION_AUD="your-application-aud-from-cloudflare-dashboard"
+
+NEXT_PUBLIC_CLOUDFLARE_ACCESS_TEAM_NAME=teamname
+
+# Note: Authentication is handled by Cloudflare Zero Trust
+# No additional authentication secrets needed - configured in Cloudflare dashboard
+
+# Note: D1 database bindings (DB) are automatically provided by wrangler.jsonc 

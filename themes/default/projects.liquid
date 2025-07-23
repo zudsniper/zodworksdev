@@ -1,0 +1,727 @@
+{% layout "default" %}
+
+<div class="projects-index">
+  <header class="page-header">
+    <h1>Projects</h1>
+    <p>Software projects and experiments</p>
+  </header>
+
+  {% if projects and projects.size > 0 %}
+  <!-- Filter Section -->
+  <div class="content-filters">
+    <div class="filter-header">
+      <h3>Filter by technology</h3>
+      <button class="filter-clear" onclick="clearAllFilters()">Clear all</button>
+    </div>
+    
+    {% assign all_tags = projects | unique_tags %}
+    {% if all_tags.size > 0 %}
+    <div class="tag-filters" data-filter-group="tags">
+      <button class="filter-tag active" data-filter="all">All Projects</button>
+      {% for tag in all_tags %}
+      <button class="filter-tag" data-filter="{{ tag | slug }}">{{ tag }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Search input -->
+    <div class="search-container">
+      <input 
+        type="search" 
+        id="content-search" 
+        placeholder="Search projects..." 
+        aria-label="Search projects"
+      />
+      <button type="button" onclick="clearSearch()" class="search-clear" aria-label="Clear search">×</button>
+    </div>
+  </div>
+
+  <div class="projects-grid" id="projects-container">
+    {% for project in projects %}
+      <article class="project-card"
+              data-tags="{% for tag in project.tags %}{{ tag | slug }}{% unless forloop.last %},{% endunless %}{% endfor %}"
+              data-title="{{ project.title | downcase }}"
+              data-description="{{ project.description | downcase }}">
+        {% if project.imageUrl %}
+          <div class="project-image">
+            <img src="{{ project.imageUrl }}" alt="{{ project.title }}" loading="lazy" />
+          </div>
+        {% endif %}
+        
+        <div class="project-content">
+          <header class="project-header">
+            <h2>
+              <a href="{{ project.url }}">{{ project.title }}</a>
+            </h2>
+            <span class="project-status status-{{ project.status | project_status_color }}">
+              {{ project.status }}
+            </span>
+          </header>
+          
+          <p class="project-description">{{ project.description }}</p>
+          
+          {% if project.tags and project.tags.size > 0 %}
+            <div class="project-tags">
+              {% for tag in project.tags %}
+                <span class="tag">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+          
+          <footer class="project-links">
+            {% if project.url %}
+              <a href="{{ project.url }}" class="link-primary">
+                Read More →
+              </a>
+            {% endif %}
+            {% if project.liveLink %}
+              <a href="{{ project.liveLink }}" target="_blank" rel="noopener" class="link-external">
+                View Live ↗
+              </a>
+            {% endif %}
+            {% if project.repoLink %}
+              <a href="{{ project.repoLink }}" target="_blank" rel="noopener" class="link-external">
+                Source Code ↗
+              </a>
+            {% endif %}
+          </footer>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+  
+  <!-- No results message (hidden by default) -->
+  <div class="no-results" id="no-results">
+    <p>No projects found matching your criteria.</p>
+    <button onclick="clearAllFilters()" class="filter-clear">Show all projects</button>
+  </div>
+  
+  {% else %}
+  <div class="no-projects">
+    <p>No projects available yet.</p>
+    <p><a href="/blog">Check out the blog instead →</a></p>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.projects-index {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.page-header p {
+  color: hsl(var(--muted-foreground));
+  font-size: 1.1rem;
+}
+
+/* Content Filtering Styles */
+.content-filters {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: hsl(var(--foreground));
+}
+
+.filter-clear {
+  background: none;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: underline;
+}
+
+.filter-clear:hover {
+  color: hsl(var(--accent-orange));
+}
+
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-tag {
+  padding: 0.5rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 2rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.filter-tag:hover {
+  border-color: hsl(var(--accent-green));
+  background: hsl(var(--accent-green) / 0.1);
+}
+
+.filter-tag.active {
+  background: hsl(var(--accent-green));
+  color: hsl(var(--background));
+  border-color: hsl(var(--accent-green));
+}
+
+.search-container {
+  position: relative;
+  max-width: 300px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: hsl(var(--accent-green));
+  box-shadow: 0 0 0 2px hsl(var(--accent-green) / 0.2);
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.search-clear:hover {
+  color: hsl(var(--accent-orange));
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.project-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsl(var(--foreground) / 0.1);
+}
+
+/* Hidden projects during filtering */
+.project-card.filtered-hidden {
+  display: none;
+}
+
+.project-image img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.project-content {
+  padding: 1.5rem;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.project-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.project-header h2 a {
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.project-header h2 a:hover {
+  color: hsl(var(--accent-orange));
+}
+
+.project-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-green { background: hsl(var(--success) / 0.2); color: hsl(var(--success)); }
+.status-blue { background: hsl(var(--primary) / 0.2); color: hsl(var(--primary)); }
+.status-teal { background: hsl(142 76% 36% / 0.2); color: hsl(142 76% 36%); }
+.status-yellow { background: hsl(var(--warning) / 0.2); color: hsl(var(--warning)); }
+.status-purple { background: hsl(271 81% 56% / 0.2); color: hsl(271 81% 56%); }
+.status-red { background: hsl(var(--destructive) / 0.2); color: hsl(var(--destructive)); }
+.status-gray { background: hsl(var(--muted) / 0.5); color: hsl(var(--muted-foreground)); }
+
+.project-description {
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tag {
+  padding: 0.25rem 0.5rem;
+  background: hsl(var(--muted));
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.project-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.project-links a {
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.link-primary {
+  color: hsl(var(--accent-green));
+}
+
+.link-primary:hover {
+  color: hsl(var(--accent-orange));
+}
+
+.link-external {
+  color: hsl(var(--muted-foreground));
+}
+
+.link-external:hover {
+  color: hsl(var(--foreground));
+}
+
+/* No results message */
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: hsl(var(--muted-foreground));
+  display: none;
+}
+
+.no-results.show {
+  display: block;
+}
+
+.no-projects {
+  text-align: center;
+  padding: 3rem 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.no-projects p {
+  margin-bottom: 1rem;
+}
+
+.no-projects a {
+  color: hsl(var(--accent-green));
+  text-decoration: none;
+}
+
+.no-projects a:hover {
+  color: hsl(var(--accent-orange));
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .projects-index {
+    padding: 1rem;
+  }
+  
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .content-filters {
+    padding: 1rem;
+  }
+  
+  .filter-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .search-container {
+    max-width: 100%;
+  }
+}
+</style>
+
+<script>
+// Optimized projects filtering and search functionality with accessibility
+(function() {
+    let currentTagFilter = 'all';
+    let currentSearchTerm = '';
+    let searchDebounceTimer = null;
+    let isFilteringInProgress = false;
+    
+    // Cached DOM elements for performance
+    let cachedElements = {};
+    
+    // Debounce function for search input
+    function debounce(func, wait) {
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(searchDebounceTimer);
+                func(...args);
+            };
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(later, wait);
+        };
+    }
+    
+    // Cache frequently accessed DOM elements
+    function cacheElements() {
+        cachedElements = {
+            projects: document.querySelectorAll('.project-card'),
+            tagButtons: document.querySelectorAll('.filter-tag'),
+            searchInput: document.getElementById('content-search'),
+            noResults: document.getElementById('no-results'),
+            projectsContainer: document.getElementById('projects-container'),
+            // Create live region for screen reader announcements
+            liveRegion: createLiveRegion()
+        };
+    }
+    
+    // Create ARIA live region for screen reader announcements
+    function createLiveRegion() {
+        let liveRegion = document.getElementById('filter-announcements');
+        if (!liveRegion) {
+            liveRegion = document.createElement('div');
+            liveRegion.id = 'filter-announcements';
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            liveRegion.style.position = 'absolute';
+            liveRegion.style.left = '-10000px';
+            liveRegion.style.width = '1px';
+            liveRegion.style.height = '1px';
+            liveRegion.style.overflow = 'hidden';
+            document.body.appendChild(liveRegion);
+        }
+        return liveRegion;
+    }
+    
+    // Initialize filters when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        cacheElements();
+        initializeFilters();
+        initializeSearch();
+        initializeKeyboardNavigation();
+        enhanceAccessibility();
+    });
+    
+    function initializeFilters() {
+        cachedElements.tagButtons.forEach((button, index) => {
+            // Add ARIA attributes
+            button.setAttribute('role', 'button');
+            button.setAttribute('aria-pressed', button.classList.contains('active') ? 'true' : 'false');
+            button.setAttribute('tabindex', '0');
+            
+            button.addEventListener('click', function() {
+                const filter = this.getAttribute('data-filter');
+                setTagFilter(filter);
+                updateActiveButton(this);
+                debouncedApplyFilters();
+            });
+            
+            // Keyboard support for filter buttons
+            button.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+                // Arrow key navigation
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    navigateFilterButtons(e.key === 'ArrowRight' ? 1 : -1, index);
+                }
+            });
+        });
+    }
+    
+    function initializeSearch() {
+        if (cachedElements.searchInput) {
+            // Add ARIA attributes
+            cachedElements.searchInput.setAttribute('aria-describedby', 'search-help');
+            
+            // Create search help text
+            if (!document.getElementById('search-help')) {
+                const helpText = document.createElement('div');
+                helpText.id = 'search-help';
+                helpText.className = 'sr-only';
+                helpText.textContent = 'Search by project title or description. Results update as you type.';
+                cachedElements.searchInput.parentNode.appendChild(helpText);
+            }
+            
+            cachedElements.searchInput.addEventListener('input', debouncedHandleSearch);
+        }
+    }
+    
+    // Debounced search handler for better performance
+    const debouncedHandleSearch = debounce(function() {
+        currentSearchTerm = cachedElements.searchInput.value.toLowerCase().trim();
+        applyFilters();
+    }, 300);
+    
+    // Debounced filter application
+    const debouncedApplyFilters = debounce(applyFilters, 100);
+    
+    function initializeKeyboardNavigation() {
+        // Enable keyboard navigation for filter container
+        const filterContainer = document.querySelector('.tag-filters');
+        if (filterContainer) {
+            filterContainer.setAttribute('role', 'toolbar');
+            filterContainer.setAttribute('aria-label', 'Filter projects by technology');
+        }
+    }
+    
+    function enhanceAccessibility() {
+        // Add screen reader only helper text
+        const srHelper = document.createElement('div');
+        srHelper.className = 'sr-only';
+        srHelper.id = 'filter-instructions';
+        srHelper.textContent = 'Use tab to navigate filter buttons, enter or space to activate, arrow keys to move between filters.';
+        
+        const filtersContainer = document.querySelector('.content-filters');
+        if (filtersContainer) {
+            filtersContainer.insertBefore(srHelper, filtersContainer.firstChild);
+            filtersContainer.setAttribute('aria-describedby', 'filter-instructions');
+        }
+    }
+    
+    function navigateFilterButtons(direction, currentIndex) {
+        const buttons = Array.from(cachedElements.tagButtons);
+        let newIndex = currentIndex + direction;
+        
+        if (newIndex < 0) newIndex = buttons.length - 1;
+        if (newIndex >= buttons.length) newIndex = 0;
+        
+        buttons[newIndex].focus();
+    }
+    
+    function setTagFilter(filter) {
+        currentTagFilter = filter;
+    }
+    
+    function updateActiveButton(activeButton) {
+        cachedElements.tagButtons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-pressed', 'false');
+        });
+        activeButton.classList.add('active');
+        activeButton.setAttribute('aria-pressed', 'true');
+    }
+    
+    function applyFilters() {
+        if (isFilteringInProgress) return;
+        isFilteringInProgress = true;
+        
+        // Use requestAnimationFrame for smooth UI updates
+        requestAnimationFrame(() => {
+            let visibleCount = 0;
+            const totalProjects = cachedElements.projects.length;
+            
+            cachedElements.projects.forEach(project => {
+                const shouldShow = matchesFilters(project);
+                
+                if (shouldShow) {
+                    project.classList.remove('filtered-hidden');
+                    project.removeAttribute('aria-hidden');
+                    visibleCount++;
+                } else {
+                    project.classList.add('filtered-hidden');
+                    project.setAttribute('aria-hidden', 'true');
+                }
+            });
+            
+            // Show/hide no results message
+            if (cachedElements.noResults) {
+                if (visibleCount === 0) {
+                    cachedElements.noResults.classList.add('show');
+                    cachedElements.noResults.removeAttribute('aria-hidden');
+                    cachedElements.noResults.setAttribute('tabindex', '0');
+                } else {
+                    cachedElements.noResults.classList.remove('show');
+                    cachedElements.noResults.setAttribute('aria-hidden', 'true');
+                    cachedElements.noResults.removeAttribute('tabindex');
+                }
+            }
+            
+            // Announce results to screen readers
+            announceResults(visibleCount, totalProjects);
+            
+            isFilteringInProgress = false;
+        });
+    }
+    
+    function announceResults(visibleCount, totalProjects) {
+        if (!cachedElements.liveRegion) return;
+        
+        let announcement = '';
+        if (visibleCount === 0) {
+            announcement = 'No projects found matching your criteria.';
+        } else if (visibleCount === totalProjects) {
+            announcement = `Showing all ${totalProjects} projects.`;
+        } else {
+            announcement = `Showing ${visibleCount} of ${totalProjects} projects.`;
+        }
+        
+        // Add filter context to announcement
+        if (currentTagFilter !== 'all') {
+            const activeButton = document.querySelector('.filter-tag.active');
+            const tagName = activeButton ? activeButton.textContent.trim() : currentTagFilter;
+            announcement += ` Filtered by technology: ${tagName}.`;
+        }
+        
+        if (currentSearchTerm) {
+            announcement += ` Search term: ${currentSearchTerm}.`;
+        }
+        
+        cachedElements.liveRegion.textContent = announcement;
+    }
+    
+    function matchesFilters(project) {
+        // Optimized filter matching with cached data attributes
+        const projectData = getProjectData(project);
+        return matchesTagFilter(projectData) && matchesSearchTerm(projectData);
+    }
+    
+    // Cache project data for better performance
+    const projectDataCache = new Map();
+    function getProjectData(project) {
+        if (!projectDataCache.has(project)) {
+            projectDataCache.set(project, {
+                tags: (project.getAttribute('data-tags') || '').split(',').filter(Boolean),
+                title: (project.getAttribute('data-title') || '').toLowerCase(),
+                description: (project.getAttribute('data-description') || '').toLowerCase()
+            });
+        }
+        return projectDataCache.get(project);
+    }
+    
+    function matchesTagFilter(projectData) {
+        if (currentTagFilter === 'all') return true;
+        return projectData.tags.includes(currentTagFilter);
+    }
+    
+    function matchesSearchTerm(projectData) {
+        if (!currentSearchTerm) return true;
+        return projectData.title.includes(currentSearchTerm) || projectData.description.includes(currentSearchTerm);
+    }
+    
+    // Global functions for button clicks with accessibility
+    window.clearAllFilters = function() {
+        currentTagFilter = 'all';
+        currentSearchTerm = '';
+        
+        // Reset search input
+        if (cachedElements.searchInput) {
+            cachedElements.searchInput.value = '';
+        }
+        
+        // Reset active tag button
+        const allButton = document.querySelector('.filter-tag[data-filter="all"]');
+        if (allButton) {
+            updateActiveButton(allButton);
+            allButton.focus(); // Maintain focus for keyboard users
+        }
+        
+        applyFilters();
+    };
+    
+    window.clearSearch = function() {
+        currentSearchTerm = '';
+        if (cachedElements.searchInput) {
+            cachedElements.searchInput.value = '';
+            cachedElements.searchInput.focus(); // Return focus to search input
+        }
+        applyFilters();
+    };
+    
+    // Add CSS for screen reader only content (if not already added)
+    if (!document.getElementById('sr-only-styles')) {
+        const srStyles = document.createElement('style');
+        srStyles.id = 'sr-only-styles';
+        srStyles.textContent = `
+            .sr-only {
+                position: absolute !important;
+                width: 1px !important;
+                height: 1px !important;
+                padding: 0 !important;
+                margin: -1px !important;
+                overflow: hidden !important;
+                clip: rect(0, 0, 0, 0) !important;
+                white-space: nowrap !important;
+                border: 0 !important;
+            }
+        `;
+        document.head.appendChild(srStyles);
+    }
+})();
+</script> 
