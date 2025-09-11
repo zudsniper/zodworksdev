@@ -4,15 +4,25 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea" // Will still use for basic structure
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Github, Linkedin, Mail, Phone, Send, ExternalLink, Loader2, Eye, Code2, AlertTriangle } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Github, Linkedin, Mail, Phone, Send, ExternalLink, Loader2, AlertTriangle, Maximize2, Minimize2, AlertCircle, AlertTriangleIcon, Circle, CircleCheck } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
+import { motion, AnimatePresence } from "framer-motion"
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels"
+import TiptapEditor from "./tiptap-editor"
+import { toast } from "sonner"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const TurnstileWidget = dynamic(() => import("./turnstile-widget"), {
   ssr: false,
@@ -21,29 +31,46 @@ const TurnstileWidget = dynamic(() => import("./turnstile-widget"), {
 const CONTACT_EMAIL = "hello@zodworks.dev"
 const ACTUAL_PHONE_NUMBER = "+1 (512) 923-8947" // Keep this secure, only revealed after check
 
-// Use test keys for localhost/development, production keys for production
-const isLocalhost = typeof window !== 'undefined' && (
-  window.location.hostname === 'localhost' || 
-  window.location.hostname === '127.0.0.1' ||
-  window.location.hostname.includes('localhost')
-)
+// Dev bypass flag (set NEXT_PUBLIC_TURNSTILE_BYPASS=1 to bypass)
+const TURNSTILE_BYPASS = process.env.NEXT_PUBLIC_TURNSTILE_BYPASS === '1'
 
-const TURNSTILE_SITE_KEY = isLocalhost 
+// Use environment variable to determine if we're in development
+const TURNSTILE_SITE_KEY = process.env.NODE_ENV === 'development' 
   ? "1x00000000000000000000AA" // Test key that always passes for localhost
   : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA")
 
+// Debug logging
+if (typeof window !== 'undefined') {
+  console.log('Turnstile Config:', {
+    NODE_ENV: process.env.NODE_ENV,
+    TURNSTILE_SITE_KEY,
+    TURNSTILE_BYPASS,
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  })
+}
+
 export default function Contact() {
   const { theme } = useTheme()
+  const isMobile = useIsMobile()
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle")
   const [formMessage, setFormMessage] = useState("")
   const [emailValue, setEmailValue] = useState("")
   const [isEmailValid, setIsEmailValid] = useState(true)
   const [messageContent, setMessageContent] = useState("")
   const [isHumanVerified, setIsHumanVerified] = useState(false) // For Turnstile
+  // If bypass enabled, auto-set verification
+  useEffect(() => {
+    if (TURNSTILE_BYPASS) {
+      setIsHumanVerified(true)
+      setFormMessage("")
+    }
+  }, [])
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [showPhoneNumber, setShowPhoneNumber] = useState(false)
   const [humanCheckboxChecked, setHumanCheckboxChecked] = useState(false)
   const [turnstileWidgetId, setTurnstileWidgetId] = useState<string | undefined>(undefined)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [priority, setPriority] = useState<string>("normal")
 
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -132,11 +159,15 @@ export default function Contact() {
     event.preventDefault()
     if (!isEmailValid || emailValue.trim() === "") {
       setIsEmailValid(false)
-      setFormMessage("please enter a valid email address.")
+      toast.error("please enter a valid email address.")
       return
     }
-    if (!turnstileToken) {
-      setFormMessage("please complete the human verification.")
+    if (!TURNSTILE_BYPASS && !turnstileToken) {
+      toast.error("please complete the human verification.")
+      return
+    }
+    if (!messageContent.trim()) {
+      toast.error("please enter a message.")
       return
     }
 
@@ -144,7 +175,11 @@ export default function Contact() {
     setFormMessage("")
     const formData = new FormData(event.currentTarget)
     // Append turnstile token and message content manually
-    formData.append("cf-turnstile-response", turnstileToken)
+    // Use bypass token if bypass is enabled
+    const tokenToUse = TURNSTILE_BYPASS ? "bypass-token" : turnstileToken
+    if (tokenToUse) {
+      formData.append("cf-turnstile-response", tokenToUse)
+    }
     formData.set("message", messageContent) // Ensure messageContent is used
 
     const data = Object.fromEntries(formData.entries())
@@ -162,35 +197,275 @@ export default function Contact() {
       }
 
       setFormStatus("success")
-      setFormMessage("message sent successfully! jason will get back to you (maybe).")
-      formRef.current?.reset()
-      setEmailValue("")
-      setMessageContent("")
-      localStorage.removeItem("contactFormMessage")
+      toast.success("message sent successfully! jason will get back to you soon.")
       
-      // Reset all Turnstile and verification states
-      setIsHumanVerified(false)
-      setTurnstileToken(null)
-      setShowPhoneNumber(false)
-      setHumanCheckboxChecked(false)
-      resetTurnstileWidget()
+      // Animate collapse
+      setIsExpanded(false)
+      
+      // Reset form after animation
+      setTimeout(() => {
+        formRef.current?.reset()
+        setEmailValue("")
+        setMessageContent("")
+        localStorage.removeItem("contactFormMessage")
+        
+        // Reset all Turnstile and verification states
+        setIsHumanVerified(false)
+        setTurnstileToken(null)
+        setShowPhoneNumber(false)
+        setHumanCheckboxChecked(false)
+        resetTurnstileWidget()
+        setFormStatus("idle")
+      }, 500)
     } catch (error: any) {
       setFormStatus("error")
-      setFormMessage(
+      toast.error(
         error.message ||
-          "failed to send message. try emailing jason directly. he'd probably fix this bug faster than i can.",
+          "failed to send message. try emailing jason directly.",
       )
-      // Optionally reset Turnstile on error too
-      // window.turnstile?.reset(); // If you have a ref to the widgetId
     }
   }
+
+  const handleEditorFocus = useCallback(() => {
+    // Don't auto-expand on focus - let user click the button
+  }, [])
+
+  const handleEditorBlur = useCallback(() => {
+    // Don't auto-collapse on blur - let user control it
+  }, [])
 
   return (
     <section id="contact" className="py-16">
       <h2 className="text-3xl font-bold font-mono text-center mb-10">
         <span className="text-primary normal-case">~$</span> mail -s "opportunity" {CONTACT_EMAIL}
       </h2>
-      <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-10 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
+      <AnimatePresence mode="wait">
+        {isExpanded && !isMobile ? (
+          <motion.div
+            key="expanded"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ 
+              duration: 0.4,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            className="max-w-6xl mx-auto p-6 rounded-lg border bg-card text-card-foreground shadow-lg"
+          >
+            <div className="space-y-6">
+              {/* Header info moved to top when expanded */}
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold font-mono mb-2 text-accent-purple">get in touch</h3>
+                  <p className="text-muted-foreground">always open to new projects, ideas, or just a chat.</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsExpanded(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Minimize2 className="h-4 w-4 mr-1" /> minimize
+                </Button>
+              </div>
+              
+              {/* Full-width form */}
+              <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
+                {/* Required fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="name">Your Name</Label>
+                    <Input id="name" name="name" placeholder="John Doe" required />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="email">Your Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={emailValue}
+                      onChange={handleEmailChange}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                {/* Optional business fields and priority */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="business-name">
+                      Business Name <span className="text-muted-foreground text-xs">(optional)</span>
+                    </Label>
+                    <Input 
+                      id="business-name" 
+                      name="businessName" 
+                      placeholder="Acme Corp" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="business-url">
+                      Business URL <span className="text-muted-foreground text-xs">(optional)</span>
+                    </Label>
+                    <Input 
+                      id="business-url" 
+                      name="businessUrl" 
+                      type="url"
+                      placeholder="https://example.com" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select name="priority" value={priority} onValueChange={setPriority}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="urgent">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangleIcon className="h-4 w-4 text-red-500" />
+                            <span>Urgent</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="high">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-orange-500" />
+                            <span>High</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="normal">
+                          <div className="flex items-center gap-2">
+                            <Circle className="h-4 w-4 text-blue-500" />
+                            <span>Normal</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="low">
+                          <div className="flex items-center gap-2">
+                            <CircleCheck className="h-4 w-4 text-gray-500" />
+                            <span>Low</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Editor panels */}
+                <div className="space-y-2">
+                  <Label>Inquiry</Label>
+                  <PanelGroup direction="horizontal" className="h-[500px] rounded-lg border">
+                    <Panel defaultSize={50} minSize={30}>
+                      <div className="h-full flex flex-col">
+                        <div className="px-3 py-2 border-b bg-muted/50">
+                          <span className="text-xs font-mono text-muted-foreground">write (markdown supported)</span>
+                        </div>
+                        <div className="flex-1 overflow-auto">
+                          <TiptapEditor
+                            content={messageContent}
+                            onChange={setMessageContent}
+                            disabled={formStatus === "submitting"}
+                            placeholder="describe your project, question, or idea..."
+                            className="border-0 rounded-none h-full"
+                            autoFocus
+                            onFocus={handleEditorFocus}
+                            onBlur={handleEditorBlur}
+                          />
+                        </div>
+                      </div>
+                    </Panel>
+                    <PanelResizeHandle className="w-1 bg-border hover:bg-primary/20 transition-colors" />
+                    <Panel defaultSize={50} minSize={30}>
+                      <div className="h-full flex flex-col">
+                        <div className="px-3 py-2 border-b bg-muted/50">
+                          <span className="text-xs font-mono text-muted-foreground">preview</span>
+                        </div>
+                        <div className="flex-1 overflow-auto p-4">
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            {messageContent ? (
+                              <ReactMarkdown 
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  code: ({ className, children, ...props }) => {
+                                    const match = /language-(\w+)/.exec(className || '')
+                                    const isInline = !className || !match
+                                    return !isInline ? (
+                                      <pre className="rounded-md bg-muted p-3 overflow-x-auto">
+                                        <code className={className} {...props}>
+                                          {children}
+                                        </code>
+                                      </pre>
+                                    ) : (
+                                      <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                                        {children}
+                                      </code>
+                                    )
+                                  },
+                                  pre: ({ children }) => (
+                                    <pre className="rounded-md bg-muted p-3 overflow-x-auto">
+                                      {children}
+                                    </pre>
+                                  )
+                                }}
+                              >
+                                {messageContent}
+                              </ReactMarkdown>
+                            ) : (
+                              <p className="text-muted-foreground italic">preview will appear here...</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Panel>
+                  </PanelGroup>
+                </div>
+                
+                {/* Turnstile and submit */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {!TURNSTILE_BYPASS ? (
+                      <TurnstileWidget
+                        siteKey={TURNSTILE_SITE_KEY}
+                        onSuccess={handleTurnstileSuccess}
+                        onError={handleTurnstileError}
+                        onExpire={handleTurnstileExpire}
+                        theme={theme === "dark" ? "dark" : "light"}
+                        onWidgetId={setTurnstileWidgetId}
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        (Turnstile bypassed in dev mode)
+                      </div>
+                    )}
+                    {formMessage && (
+                      <p className={`text-sm ${formStatus === "error" ? "text-destructive" : "text-muted-foreground"}`}>
+                        {formMessage}
+                      </p>
+                    )}
+                  </div>
+                  <Button type="submit" disabled={formStatus === "submitting" || !isHumanVerified}>
+                    {formStatus === "submitting" ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> sending...</>
+                    ) : (
+                      <><Send className="h-4 w-4 mr-2" /> send message</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="collapsed"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ 
+              duration: 0.4,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            className="max-w-3xl mx-auto grid md:grid-cols-2 gap-10 p-6 rounded-lg border bg-card text-card-foreground shadow-sm"
+          >
         <div className="space-y-6">
           <div>
             <h3 className="text-xl font-semibold font-mono mb-2 text-accent-purple">get in touch</h3>
@@ -260,10 +535,11 @@ export default function Contact() {
           </div>
         </div>
         <form ref={formRef} className="space-y-4" onSubmit={handleFormSubmit}>
+          {/* Required fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label htmlFor="name">Your Name</Label>
-              <Input id="name" name="name" placeholder="Jason McElhenney" required />
+              <Input id="name" name="name" placeholder="John Doe" required />
             </div>
             <div className="space-y-1">
               <Label htmlFor="email">Your Email</Label>
@@ -278,43 +554,79 @@ export default function Contact() {
               />
             </div>
           </div>
+          
+          {/* Optional fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="business-name">
+                Business <span className="text-muted-foreground text-xs">(optional)</span>
+              </Label>
+              <Input 
+                id="business-name" 
+                name="businessName" 
+                placeholder="Acme Corp" 
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="priority">Priority</Label>
+              <Select name="priority" value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="urgent">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangleIcon className="h-4 w-4 text-red-500" />
+                      <span>Urgent</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="high">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-orange-500" />
+                      <span>High</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="normal">
+                    <div className="flex items-center gap-2">
+                      <Circle className="h-4 w-4 text-blue-500" />
+                      <span>Normal</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="low">
+                    <div className="flex items-center gap-2">
+                      <CircleCheck className="h-4 w-4 text-gray-500" />
+                      <span>Low</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div className="space-y-1">
-            <Label htmlFor="message">Your Message</Label>
-            <Tabs defaultValue="edit" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-auto">
-                <TabsTrigger value="write" className="font-mono">
-                  <Code2 className="h-4 w-4 mr-2" />
-                  write
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="font-mono">
-                  <Eye className="h-4 w-4 mr-2" />
-                  preview
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="write">
-                <Textarea
-                  id="message"
-                  name="message_hidden" // Name changed so it's not directly submitted if JS fails
-                  rows={6}
-                  required
-                  placeholder="your message..."
-                  className="font-mono mt-2 min-h-[150px]"
-                  value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
-                  disabled={formStatus === "submitting"}
-                />
-              </TabsContent>
-              <TabsContent value="preview">
-                <div className="prose prose-sm dark:prose-invert min-h-[150px] mt-2 rounded-md border p-3 bg-muted/50 overflow-auto">
-                  {messageContent ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{messageContent}</ReactMarkdown>
-                  ) : (
-                    <p className="text-muted-foreground italic">preview will appear here...</p>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
+            <div className="flex justify-between items-center mb-2">
+              <Label htmlFor="message">Inquiry</Label>
+              {!isMobile && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded(true)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Maximize2 className="h-4 w-4 mr-1" /> expand editor
+                </Button>
+              )}
+            </div>
+            
+            <TiptapEditor
+              content={messageContent}
+              onChange={setMessageContent}
+              disabled={formStatus === "submitting"}
+              placeholder="describe your project, question, or idea..."
+              onFocus={handleEditorFocus}
+              onBlur={handleEditorBlur}
+            />
           </div>
 
           <div className="space-y-3 pt-2">
@@ -325,21 +637,28 @@ export default function Contact() {
                 message or view phone number.
               </span>
             </div>
-            <TurnstileWidget
-              siteKey={TURNSTILE_SITE_KEY}
-              onSuccess={handleTurnstileSuccess}
-              onError={handleTurnstileError}
-              onExpire={handleTurnstileExpire}
-              theme={theme === "dark" ? "dark" : "light"}
-              className="mx-auto w-min" // Center the widget
-              onWidgetId={setTurnstileWidgetId}
-            />
+            {!TURNSTILE_BYPASS && (
+              <TurnstileWidget
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={handleTurnstileSuccess}
+                onError={handleTurnstileError}
+                onExpire={handleTurnstileExpire}
+                theme={theme === "dark" ? "dark" : "light"}
+                className="mx-auto w-min" // Center the widget
+                onWidgetId={setTurnstileWidgetId}
+              />
+            )}
+            {TURNSTILE_BYPASS && (
+              <div className="text-center text-sm text-muted-foreground">
+                (Turnstile bypassed in dev mode)
+              </div>
+            )}
           </div>
 
           <Button
             type="submit"
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-mono"
-            disabled={formStatus === "submitting" || !isHumanVerified || !turnstileToken}
+            disabled={formStatus === "submitting" || (!isHumanVerified && !TURNSTILE_BYPASS) || (!turnstileToken && !TURNSTILE_BYPASS)}
           >
             {formStatus === "submitting" ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -362,7 +681,9 @@ export default function Contact() {
             </p>
           )}
         </form>
-      </div>
+        </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

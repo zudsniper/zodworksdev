@@ -7,6 +7,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import ChatbotPopup from "@/components/chatbot-popup"
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "sonner"
 import ScrollRateLimiter from "@/components/scroll-rate-limiter"
 // Removed ApiStatusProvider and OfflineBanner imports
 
@@ -60,6 +61,7 @@ export default function RootLayout({
           <ChatbotPopup />
           {/* OfflineBanner removed */}
           <Toaster />
+          <SonnerToaster richColors position="top-center" />
           <ScrollRateLimiter />
         </ThemeProvider>
       </body>
