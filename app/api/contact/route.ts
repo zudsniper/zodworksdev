@@ -1,4 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+// Developer note:
+// Set the following optional env variables to enable Cloudflare Worker dashboard link buttons
+// in the Discord notification for contact form submissions:
+//   CF_ACCOUNT_ID            Cloudflare account id
+//   CF_WORKER_NAME           Worker (service) name (e.g. wrangler.jsonc "name")
+//   CF_WORKER_DASHBOARD_URL  (optional) explicit full dashboard URL override
+// If CF_WORKER_DASHBOARD_URL not provided a URL is constructed using account + worker name.
 
 interface RequestBody {
     name: string;
@@ -54,7 +61,8 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = new FormData();
-    formData.append("secret", secretKey);
+    // secretKey is guaranteed when not bypass (guard above); bypass skips verification later
+    formData.append("secret", secretKey || "");
     formData.append("response", body["cf-turnstile-response"]);
     formData.append("remoteip", (request.headers.get("x-forwarded-for") ?? "127.0.0.1").split(",")[0]);
 
@@ -232,18 +240,43 @@ async function sendDiscordNotification(data: RequestBody, webhookUrl: string) {
     const adminUserId = process.env.DISCORD_ADMIN_USER_ID;
     const content = adminUserId ? `<@${adminUserId}>` : undefined;
     
-    const payload = {
+    const payload: any = {
         content,
         embeds: [{
             title: '📬 new contact form submission',
             color: priorityColors[data.priority || 'normal'],
             fields,
-            footer: {
-                text: 'zodworks.dev contact form'
-            },
+            footer: { text: 'zodworks.dev contact form' },
             timestamp: new Date().toISOString()
         }]
     };
+
+    // Developer convenience link buttons if env vars provided.
+    // Supported env vars:
+    //   CF_ACCOUNT_ID       -> your Cloudflare account id
+    //   CF_WORKER_NAME      -> worker service name (e.g. from wrangler.jsonc "name")
+    //   CF_WORKER_DASHBOARD_URL (optional explicit full URL override)
+    const explicit = process.env.CF_WORKER_DASHBOARD_URL;
+    const account = process.env.CF_ACCOUNT_ID;
+    const worker = process.env.CF_WORKER_NAME;
+    let dashboardUrl = explicit;
+    if (!dashboardUrl && account && worker) {
+        dashboardUrl = `https://dash.cloudflare.com/${account}/workers/services/view/${worker}`;
+    }
+    if (dashboardUrl) {
+        const buttons: any[] = [
+            { type: 2, style: 5, label: 'Cloudflare Worker', url: dashboardUrl }
+        ];
+        if (!explicit && account && worker) {
+            buttons.push({
+                type: 2,
+                style: 5,
+                label: 'Logs (tail)',
+                url: `https://dash.cloudflare.com/${account}/workers/services/view/${worker}/production/monitoring`
+            });
+        }
+        payload.components = [{ type: 1, components: buttons }];
+    }
     
     try {
         const response = await fetch(webhookUrl, {

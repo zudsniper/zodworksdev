@@ -20,7 +20,9 @@ import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels"
-import TiptapEditor from "./tiptap-editor"
+import { Textarea } from "@/components/ui/textarea"
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { toast } from "sonner"
 import { useIsMobile } from "@/hooks/use-mobile"
 
@@ -361,12 +363,12 @@ export default function Contact() {
                           <span className="text-xs font-mono text-muted-foreground">write (markdown supported)</span>
                         </div>
                         <div className="flex-1 overflow-auto">
-                          <TiptapEditor
-                            content={messageContent}
-                            onChange={setMessageContent}
+                          <Textarea
+                            value={messageContent}
+                            onChange={(e) => setMessageContent(e.target.value)}
                             disabled={formStatus === "submitting"}
-                            placeholder="describe your project, question, or idea..."
-                            className="border-0 rounded-none h-full"
+                            placeholder="type your message using markdown...\n\n# heading\n**bold** *italic*\n```code```\n- list item"
+                            className="border-0 rounded-none h-full resize-none font-mono text-sm focus:outline-none focus:ring-0 p-3"
                             autoFocus
                             onFocus={handleEditorFocus}
                             onBlur={handleEditorBlur}
@@ -386,26 +388,38 @@ export default function Contact() {
                               <ReactMarkdown 
                                 remarkPlugins={[remarkGfm]}
                                 components={{
-                                  code: ({ className, children, ...props }) => {
+                                  code({ node, inline, className, children, ...props }: any) {
                                     const match = /language-(\w+)/.exec(className || '')
-                                    const isInline = !className || !match
-                                    return !isInline ? (
-                                      <pre className="rounded-md bg-muted p-3 overflow-x-auto">
-                                        <code className={className} {...props}>
-                                          {children}
-                                        </code>
-                                      </pre>
+                                    return !inline && match ? (
+                                      <SyntaxHighlighter
+                                        language={match[1]}
+                                        style={oneDark}
+                                        customStyle={{
+                                          margin: 0,
+                                          borderRadius: '0.375rem',
+                                          fontSize: '0.875rem',
+                                        }}
+                                        {...props}
+                                      >
+                                        {String(children).replace(/\n$/, '')}
+                                      </SyntaxHighlighter>
                                     ) : (
                                       <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono" {...props}>
                                         {children}
                                       </code>
                                     )
                                   },
-                                  pre: ({ children }) => (
-                                    <pre className="rounded-md bg-muted p-3 overflow-x-auto">
+                                  h1: ({ children }) => <h1 className="text-2xl font-bold mt-4 mb-2">{children}</h1>,
+                                  h2: ({ children }) => <h2 className="text-xl font-semibold mt-3 mb-2">{children}</h2>,
+                                  h3: ({ children }) => <h3 className="text-lg font-medium mt-2 mb-1">{children}</h3>,
+                                  p: ({ children }) => <p className="mb-2">{children}</p>,
+                                  ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
+                                  ol: ({ children }) => <ol className="list-decimal pl-5 mb-2">{children}</ol>,
+                                  blockquote: ({ children }) => (
+                                    <blockquote className="border-l-4 border-muted-foreground/30 pl-4 italic my-2">
                                       {children}
-                                    </pre>
-                                  )
+                                    </blockquote>
+                                  ),
                                 }}
                               >
                                 {messageContent}
@@ -619,11 +633,12 @@ export default function Contact() {
               )}
             </div>
             
-            <TiptapEditor
-              content={messageContent}
-              onChange={setMessageContent}
+            <Textarea
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
               disabled={formStatus === "submitting"}
-              placeholder="describe your project, question, or idea..."
+              placeholder="describe your project, question, or idea...\n\nmarkdown supported: **bold** *italic* # heading ```code```"
+              className="font-mono text-sm min-h-[150px]"
               onFocus={handleEditorFocus}
               onBlur={handleEditorBlur}
             />
