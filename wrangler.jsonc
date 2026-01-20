@@ -1,6 +1,6 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "account_id": "810bd4acabc2c37ab296b683fad360b4",
+    "account_id": "54460b765d7a0ef8299d956c784f14d7",
     "main": ".open-next/worker.js",
     "name": "portfolio",
     "compatibility_date": "2024-12-30",
@@ -29,6 +29,13 @@
         "binding": "NEXT_INC_CACHE_R2_BUCKET",
         "bucket_name": "portfolio-next-inc-cache",
       },
+    ],
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "zodworks-blog-db-prod",
+        "database_id": "9716b452-49f3-4c46-a854-2a9526314f36"
+      }
     ],
     "routes": [
       {
